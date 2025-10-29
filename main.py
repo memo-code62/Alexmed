@@ -810,8 +810,6 @@ if query_engine:
             st.write_stream(response.response_gen)
             st.session_state.messages.append({"role": "assistant", "content": response.response})
     "الإجابات يجب أن تكون دقيقة وواضحة ومبنية بالكامل على المراجع الطبية المتوفرة لديك في قاعدة المعرفة المرفقة. إذا لم تجد الإجابة، اذكر ذلك بوضوح."
-)
-
 # ---------------------------------
 # 2. بناء/تحميل الفهرس
 # ---------------------------------
@@ -1095,7 +1093,6 @@ if query_engine:
     
     # ملاحظة: يمكنك إضافة أي رابط آخر تريد أن يستقي منه النموذج معلوماته هنا
     # "https://your-favorite-university-medical-journal.com/article", 
-]
 
 SYSTEM_PROMPT = (
     "أنت مساعد طبي ذكي متخصص في الإجابة على استفسارات طلاب الطب. "
