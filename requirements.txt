@@ -5,7 +5,7 @@ llama-index
 llama-index-readers-file
 pypdf
 # لـ Multi-modal RAG
-llama-index-llms-google
+llama-index-llms-gemini
 Pillow  # يجب أن تبدأ بحرف كبير
 # لتنزيل PDF
 fpdf2
