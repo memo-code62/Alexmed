@@ -991,8 +991,7 @@ if prompt := st.chat_input("اطرح سؤالاً طبياً..."):
             response = query_engine.query(prompt)
             st.write_stream(response.response_gen)
             st.session_state.messages.append({"role": "assistant", "content": response.response})
-            ]
-
+    
 # **مهم:** الـ SYSTEM PROMPT المحدث بناءً على طلبك
 SYSTEM_PROMPT = (
     "أنت مساعد طبي ذكي متخصص في الإجابة على استفسارات طلاب الطب. "
