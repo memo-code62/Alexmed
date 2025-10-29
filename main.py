@@ -278,8 +278,6 @@ if query_engine:
             st.write_stream(response.response_gen)
             st.session_state.messages.append({"role": "assistant", "content": response.response})
     "عند طلب الجداول أو المقارنات أو الشروحات المعقدة، يجب أن تُنظَّم الإجابة في شكل نص مُهيكل (Markdown) واضح وموجز."
-)
-
 # ---------------------------------
 # 2. بناء/تحميل الفهرس المتعدد الأنماط
 # ---------------------------------
