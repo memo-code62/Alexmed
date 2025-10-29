@@ -1182,5 +1182,4 @@ if query_engine:
         with st.chat_message("assistant"):
             response = query_engine.query(prompt)
             st.write_stream(response.response_gen)
-            st.session_state.messages.append({"role": "assistant", "content": response.response})
-            
+            st.session_state.messages.append({"role": "assistant", "content": response.response})     

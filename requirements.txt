@@ -5,14 +5,12 @@ llama-index
 llama-index-readers-file
 pypdf
 # لـ Multi-modal RAG
-llama-index-multi-modal-llms-google
-Pillow  # يجب أن تبدأ بحرف كبير
+llama-index-llms-googlePillow  # يجب أن تبدأ بحرف كبير
 # لتنزيل PDF
 fpdf2
 # لتنزيل DOCX
 python-docx
 # لتنزيل PowerPoint (PPTX)
 python-pptx
-
 # مكتبات إضافية قد تكون مستخدمة ضمنياً في كود RAG (للتأكد)
 tiktoken
