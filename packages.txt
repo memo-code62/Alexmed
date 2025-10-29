@@ -1,2 +1,1 @@
 build-essential
-pip install --upgrade pip
