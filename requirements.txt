@@ -1,14 +1,18 @@
 streamlit
+google-genai
 llama-index
-llama-index-google-genai
-llama-index-readers-web
+# القارئ الأساسي (مهم لـ RAG)
+llama-index-readers-file
 pypdf
 # لـ Multi-modal RAG
 llama-index-multi-modal-llms-google
-pillow
+Pillow  # يجب أن تبدأ بحرف كبير
 # لتنزيل PDF
 fpdf2
 # لتنزيل DOCX
 python-docx
-# 🆕 لتنزيل PowerPoint (PPTX)
-python-pptx 
+# لتنزيل PowerPoint (PPTX)
+python-pptx
+
+# مكتبات إضافية قد تكون مستخدمة ضمنياً في كود RAG (للتأكد)
+tiktoken
