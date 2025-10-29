@@ -1,0 +1,14 @@
+streamlit
+llama-index
+llama-index-google-genai
+llama-index-readers-web
+pypdf
+# لـ Multi-modal RAG
+llama-index-multi-modal-llms-google
+pillow
+# لتنزيل PDF
+fpdf2
+# لتنزيل DOCX
+python-docx
+# 🆕 لتنزيل PowerPoint (PPTX)
+python-pptx 
