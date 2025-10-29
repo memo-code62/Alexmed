@@ -982,7 +982,7 @@ full_prompt = (
 )
 
     
-    if prompt := st.chat_input("اطرح سؤالاً طبياً..."):
+if prompt := st.chat_input("اطرح سؤالاً طبياً..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
