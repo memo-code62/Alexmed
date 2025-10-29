@@ -8,7 +8,8 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, StorageCon
 from llama_index.readers.web import SimpleWebPageReader
 
 # استيرادات Multi-modal RAG و Gemini
-from llama_index.multi_modal_llms.google import GeminiMultiModal 
+from llama_index.multi_modal_llms.google import GeminiMultiModal
+
 from llama_index.google.genai import Gemini 
 from PIL import Image
 
