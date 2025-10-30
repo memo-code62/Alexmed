@@ -3,6 +3,7 @@ google-genai
 llama-index
 # القارئ الأساسي (مهم لـ RAG)
 llama-index-readers-file
+llama-index-readers-web
 pypdf
 # لـ Multi-modal RAG
 llama-index-llms-gemini
