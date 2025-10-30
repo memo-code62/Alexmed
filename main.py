@@ -10,7 +10,6 @@ from llama_index.readers.web import SimpleWebPageReader
 # استيرادات Multi-modal RAG و Gemini
 from llama_index.llms.gemini import Gemini
 
-from llama_index.google.genai import Gemini 
 from PIL import Image
 
 # استيراد حزمة جوجل لتوليد الصور
