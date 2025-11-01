@@ -279,7 +279,7 @@ if query_engine:
             st.markdown(text_and_image_input)
 
         with st.chat_message("assistant"):
-            response = query_engine.query(text_and_image_input, images=image_to_query) 
+            response = query_engine.query(text_and_image_input) 
 
             st.write_stream(response.response_gen)
             st.session_state.messages.append({"role": "assistant", "content": response.response})
