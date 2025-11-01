@@ -9,6 +9,7 @@ pypdf
 llama-index-llms-gemini
 Pillow  # يجب أن تبدأ بحرف كبير
 # لتنزيل PDF
+llama-index-embeddings-google-genai
 fpdf2
 # لتنزيل DOCX
 python-docx
@@ -16,3 +17,6 @@ python-docx
 python-pptx
 # مكتبات إضافية قد تكون مستخدمة ضمنياً في كود RAG (للتأكد)
 tiktoken
+docx
+llama-index-core
+sift-stack-py
