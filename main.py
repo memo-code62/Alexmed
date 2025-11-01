@@ -51,15 +51,16 @@ SYSTEM_PROMPT = (
 def setup_rag_engine():
 
     if "GEMINI_API_KEY" not in os.environ and not Path(INDEX_STORAGE_DIR).exists():
-        st.error("❌ المفتاح السري لـ Gemini مفقود! يرجى إضافته في Secrets أو الكود.")
+        st.error("❌ المفتاح السري لـ Gemini مفقود! يرجى إضافته في Secrets.")
         return None
 
     try:
         # LLM Multi-modal لقراءة وفهم النصوص والصور في الفهرس
-        llm_multi = Gemini(model="gemini-2.5-flash") # الاستخدام الصحيح
+        llm_multi = Gemini(model="gemini-2.5-flash")
         # LLM النصي لمحرك الاستعلام النهائي
-        llm_text = Gemini(model="gemini-2.5-flash")  # الاستخدام الصحيح
+        llm_text = Gemini(model="gemini-2.5-flash")
     except Exception as e:
+        # هنا قد تظهر رسالة API key not valid إذا كان المفتاح غير صحيح
         st.error(f"❌ فشل تهيئة نموذج Gemini: {e}")
         return None
 
@@ -69,21 +70,30 @@ def setup_rag_engine():
         index = load_index_from_storage(storage_context, llm=llm_text)
 
     else:
-        st.warning("⏳ جاري بناء قاعدة المعرفة المتعددة الأنماط (تأكد من وجود صور JPG/PNG وملفات PDF)...")
+        st.warning("⏳ جاري بناء قاعدة المعرفة المتعددة الأنماط (قد يستغرق وقتًا طويلاً)...")
 
         try:
-            # قراءة النصوص من PDF والصور من JPG/PNG
-            pdf_documents = SimpleDirectoryReader(input_dir=PDF_DIR, required_exts=[".pdf", ".jpg", ".png"]).load_data()
-            url_documents = SimpleWebPageReader(input_urls=MEDICAL_URLS).load_data()
+            # 1. قراءة الملفات المحلية (PDF/JPG/PNG)
+            # **تم إضافة ignore_empty=True لتجاوز خطأ عدم العثور على ملفات**
+            pdf_documents = SimpleDirectoryReader(
+                input_dir=PDF_DIR, 
+                required_exts=[".pdf", ".jpg", ".png"],
+                ignore_empty=True 
+            ).load_data()
+
+            # 2. قراءة المواقع الإلكترونية
+            # **تم تغيير الصيغة إلى .load_data(urls=...) لحل مشكلة التوافق**
+            url_documents = SimpleWebPageReader().load_data(urls=MEDICAL_URLS)
+
             documents = pdf_documents + url_documents
             st.info(f"تم تحميل {len(documents)} مستند (نصي وبصري). جاري الفهرسة...")
 
             index = VectorStoreIndex.from_documents(
                 documents,
-                llm=llm_multi, # استخدام نموذج الأنماط المتعددة للفهرسة
+                llm=llm_multi,
             )
             index.storage_context.persist(persist_dir=INDEX_STORAGE_DIR)
-            st.success("✅ تم بناء قاعدة المعرفة المتعددة الأنماط وحفظها بنجاح!")
+            st.success("✅ تم بناء قاعدة المعرفة المتعددة الأنماط وحفظها بنجاح! التطبيق جاهز.")
 
         except Exception as e:
             st.error(f"❌ خطأ حرج في بناء الفهرس: {e}")
