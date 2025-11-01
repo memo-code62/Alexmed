@@ -58,8 +58,8 @@ def setup_rag_engine():
 
     try:
         # 1. تهيئة نماذج اللغة (LLMs)
-        llm_multi = Gemini(model="gemini-2.5-flash")
-        llm_text = Gemini(model="gemini-2.5-flash")
+        llm_multi = Gemini(model="gemini-2.5-pro")
+        llm_text = Gemini(model="gemini-2.5-pro")
 
         # 2. تهيئة نموذج التضمين (Embedding Model) لحل مشكلة OpenAI واستخدام المسار الجديد
         embed_model = GoogleGenAIEmbedding(model_name="text-embedding-004") 
