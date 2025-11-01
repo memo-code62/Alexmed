@@ -49,18 +49,15 @@ SYSTEM_PROMPT = (
 
 @st.cache_resource
 def setup_rag_engine():
-
+    
     if "GEMINI_API_KEY" not in os.environ and not Path(INDEX_STORAGE_DIR).exists():
         st.error("❌ المفتاح السري لـ Gemini مفقود! يرجى إضافته في Secrets.")
         return None
 
     try:
-        # LLM Multi-modal لقراءة وفهم النصوص والصور في الفهرس
         llm_multi = Gemini(model="gemini-2.5-flash")
-        # LLM النصي لمحرك الاستعلام النهائي
         llm_text = Gemini(model="gemini-2.5-flash")
     except Exception as e:
-        # هنا قد تظهر رسالة API key not valid إذا كان المفتاح غير صحيح
         st.error(f"❌ فشل تهيئة نموذج Gemini: {e}")
         return None
 
@@ -68,23 +65,21 @@ def setup_rag_engine():
         st.info("🔄 جاري تحميل قاعدة المعرفة المتعددة الأنماط الموجودة مسبقًا...")
         storage_context = StorageContext.from_defaults(persist_dir=INDEX_STORAGE_DIR)
         index = load_index_from_storage(storage_context, llm=llm_text)
-
+        
     else:
         st.warning("⏳ جاري بناء قاعدة المعرفة المتعددة الأنماط (قد يستغرق وقتًا طويلاً)...")
-
+        
         try:
             # 1. قراءة الملفات المحلية (PDF/JPG/PNG)
-            # **تم إضافة ignore_empty=True لتجاوز خطأ عدم العثور على ملفات**
+            # **تم حذف ignore_empty=True**
             pdf_documents = SimpleDirectoryReader(
                 input_dir=PDF_DIR, 
-                required_exts=[".pdf", ".jpg", ".png"],
-                ignore_empty=True 
+                required_exts=[".pdf", ".jpg", ".png"]
             ).load_data()
-
-            # 2. قراءة المواقع الإلكترونية
-            # **تم تغيير الصيغة إلى .load_data(urls=...) لحل مشكلة التوافق**
+            
+            # 2. قراءة المواقع الإلكترونية (ما زال يستخدم التعديل الصحيح)
             url_documents = SimpleWebPageReader().load_data(urls=MEDICAL_URLS)
-
+            
             documents = pdf_documents + url_documents
             st.info(f"تم تحميل {len(documents)} مستند (نصي وبصري). جاري الفهرسة...")
 
@@ -94,8 +89,9 @@ def setup_rag_engine():
             )
             index.storage_context.persist(persist_dir=INDEX_STORAGE_DIR)
             st.success("✅ تم بناء قاعدة المعرفة المتعددة الأنماط وحفظها بنجاح! التطبيق جاهز.")
-
+            
         except Exception as e:
+            # إذا لم يتم العثور على ملفات، سيظهر خطأ هنا، لكن لن يكسر تهيئة LlamaIndex
             st.error(f"❌ خطأ حرج في بناء الفهرس: {e}")
             return None
 
@@ -105,6 +101,7 @@ def setup_rag_engine():
         streaming=True
     )
     return query_engine
+    
 
 # ---------------------------------
 # 3. دوال توليد الوسائط والتنزيل
