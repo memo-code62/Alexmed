@@ -7,6 +7,7 @@ from PIL import Image
 # الاستيرادات الأساسية لـ LlamaIndex
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, StorageContext, load_index_from_storage
 from llama_index.readers.web import SimpleWebPageReader
+from llama_index.embeddings.gemini import GeminiEmbedding
 # استيرادات Gemini (تم التأكد من استخدام Gemini بدلاً من GeminiMultiModal)
 from llama_index.llms.gemini import Gemini
 
@@ -42,66 +43,69 @@ SYSTEM_PROMPT = (
     "الإجابة يجب أن تكون باللغة العربية، مع الحفاظ على **المصطلحات الطبية الأساسية (الأمراض، الأدوية، المصطلحات التشريحية)** باللغة الإنجليزية/اللاتينية داخل الأقواس. "
     "يجب أن تقدم إجاباتك في شكل منظم، وتستخدم الجداول والعناصر المرقمة عند طلب المقارنات. كما يمكنك إنشاء أسئلة تدريبية وتلخيصات و Mnemonic Devices (تحشيشات) عند طلبها."
 )
+    # ---------------------------------
+    # 2. بناء/تحميل الفهرس المتعدد الأنماط
+    # ---------------------------------
 
-# ---------------------------------
-# 2. بناء/تحميل الفهرس المتعدد الأنماط
-# ---------------------------------
+    @st.cache_resource
+    def setup_rag_engine():
 
-@st.cache_resource
-def setup_rag_engine():
-    
-    if "GEMINI_API_KEY" not in os.environ and not Path(INDEX_STORAGE_DIR).exists():
-        st.error("❌ المفتاح السري لـ Gemini مفقود! يرجى إضافته في Secrets.")
-        return None
-
-    try:
-        llm_multi = Gemini(model="gemini-2.5-flash")
-        llm_text = Gemini(model="gemini-2.5-flash")
-    except Exception as e:
-        st.error(f"❌ فشل تهيئة نموذج Gemini: {e}")
-        return None
-
-    if Path(INDEX_STORAGE_DIR).exists():
-        st.info("🔄 جاري تحميل قاعدة المعرفة المتعددة الأنماط الموجودة مسبقًا...")
-        storage_context = StorageContext.from_defaults(persist_dir=INDEX_STORAGE_DIR)
-        index = load_index_from_storage(storage_context, llm=llm_text)
-        
-    else:
-        st.warning("⏳ جاري بناء قاعدة المعرفة المتعددة الأنماط (قد يستغرق وقتًا طويلاً)...")
-        
-        try:
-            # 1. قراءة الملفات المحلية (PDF/JPG/PNG)
-            # **تم حذف ignore_empty=True**
-            pdf_documents = SimpleDirectoryReader(
-                input_dir=PDF_DIR, 
-                required_exts=[".pdf", ".jpg", ".png"]
-            ).load_data()
-            
-            # 2. قراءة المواقع الإلكترونية (ما زال يستخدم التعديل الصحيح)
-            url_documents = SimpleWebPageReader().load_data(urls=MEDICAL_URLS)
-            
-            documents = pdf_documents + url_documents
-            st.info(f"تم تحميل {len(documents)} مستند (نصي وبصري). جاري الفهرسة...")
-
-            index = VectorStoreIndex.from_documents(
-                documents,
-                llm=llm_multi,
-            )
-            index.storage_context.persist(persist_dir=INDEX_STORAGE_DIR)
-            st.success("✅ تم بناء قاعدة المعرفة المتعددة الأنماط وحفظها بنجاح! التطبيق جاهز.")
-            
-        except Exception as e:
-            # إذا لم يتم العثور على ملفات، سيظهر خطأ هنا، لكن لن يكسر تهيئة LlamaIndex
-            st.error(f"❌ خطأ حرج في بناء الفهرس: {e}")
+        if "GEMINI_API_KEY" not in os.environ and not Path(INDEX_STORAGE_DIR).exists():
+            st.error("❌ المفتاح السري لـ Gemini مفقود! يرجى إضافته في Secrets.")
             return None
 
-    query_engine = index.as_query_engine(
-        llm=llm_text,
-        system_prompt=SYSTEM_PROMPT,
-        streaming=True
-    )
-    return query_engine
-    
+        try:
+            # 1. تهيئة نماذج اللغة (LLMs)
+            llm_multi = Gemini(model="gemini-2.5-flash")
+            llm_text = Gemini(model="gemini-2.5-flash")
+
+            # 2. تهيئة نموذج التضمين (Embedding Model) لحل مشكلة OpenAI
+            embed_model = GeminiEmbedding(model_name="text-embedding-004") 
+
+        except Exception as e:
+            st.error(f"❌ فشل تهيئة نموذج Gemini: {e}")
+            return None
+
+        if Path(INDEX_STORAGE_DIR).exists():
+            st.info("🔄 جاري تحميل قاعدة المعرفة المتعددة الأنماط الموجودة مسبقًا...")
+            storage_context = StorageContext.from_defaults(persist_dir=INDEX_STORAGE_DIR)
+            index = load_index_from_storage(storage_context, llm=llm_text)
+
+        else:
+            st.warning("⏳ جاري بناء قاعدة المعرفة المتعددة الأنماط (قد يستغرق وقتًا طويلاً)...")
+
+            try:
+                # 1. قراءة الملفات المحلية (تم حذف الوسيطات غير المدعومة)
+                pdf_documents = SimpleDirectoryReader(
+                    input_dir=PDF_DIR, 
+                    required_exts=[".pdf", ".jpg", ".png"]
+                ).load_data()
+
+                # 2. قراءة المواقع الإلكترونية (تم حل مشكلة التوافق)
+                url_documents = SimpleWebPageReader().load_data(urls=MEDICAL_URLS)
+
+                documents = pdf_documents + url_documents
+                st.info(f"تم تحميل {len(documents)} مستند (نصي وبصري). جاري الفهرسة...")
+
+                index = VectorStoreIndex.from_documents(
+                    documents,
+                    llm=llm_multi,
+                    embed_model=embed_model, # تمرير نموذج التضمين الخاص بـ Gemini
+                )
+                index.storage_context.persist(persist_dir=INDEX_STORAGE_DIR)
+                st.success("✅ تم بناء قاعدة المعرفة المتعددة الأنماط وحفظها بنجاح! التطبيق جاهز.")
+
+            except Exception as e:
+                st.error(f"❌ خطأ حرج في بناء الفهرس: {e}")
+                return None
+
+        query_engine = index.as_query_engine(
+            llm=llm_text,
+            system_prompt=SYSTEM_PROMPT,
+            streaming=True
+        )
+        return query_engine
+
 
 # ---------------------------------
 # 3. دوال توليد الوسائط والتنزيل
